@@ -1,4 +1,4 @@
-﻿import streamlit as st
+import streamlit as st
 import pandas as pd
 import numpy as np
 import pickle
@@ -23,8 +23,8 @@ if os.path.exists(css_file):
 # 2. Judul Aplikasi (Custom Premium Header)
 st.markdown("""
 <div class="hero-container">
-    <div class="hero-badge">📊 Data Mining Project &middot; Semester 4</div>
-    <h1 class="hero-title">RailCast</h1>
+    <div class="hero-badge"><i class="fa-solid fa-graduation-cap" style="margin-right: 8px;"></i>Data Mining Project &middot; Semester 4</div>
+    <h1 class="hero-title"><i class="fa-solid fa-train" style="margin-right: 12px; color: #818cf8;"></i>RailCast</h1>
     <p class="hero-subtitle">Platform Analisis & Peramalan Volume Penumpang Kereta Api menggunakan 3 algoritma AI sekaligus: <strong>Prophet</strong>, <strong>ARIMA</strong>, dan <strong>Holt-Winters</strong>.</p>
 </div>
 """, unsafe_allow_html=True)
@@ -40,7 +40,14 @@ kategori_opsi = {
 }
 
 
-st.sidebar.header("🎛️ Panel Kontrol")
+st.sidebar.markdown("""
+<div style="display: flex; align-items: center; gap: 0.5rem; margin-top: 1rem; margin-bottom: 1.5rem;">
+    <span style="font-size: 1.25rem; color: #818cf8;"><i class="fa-solid fa-sliders"></i></span>
+    <h3 style="color: #f1f5f9; font-size: 1.25rem; font-weight: 700; margin: 0; font-family: 'Inter', sans-serif;">
+        Panel Kontrol
+    </h3>
+</div>
+""", unsafe_allow_html=True)
 
 kategori_terpilih = st.sidebar.selectbox(
     "Pilih Moda Transportasi Kereta:",
@@ -91,7 +98,7 @@ def load_all_models(suffix):
 model_prophet, model_arima, model_hw = load_all_models(file_suffix)
 
 # 6. Proses Prediksi / Forecasting
-if st.sidebar.button("📊 Jalankan Prediksi", type="primary"):
+if st.sidebar.button("Jalankan Prediksi", type="primary"):
     
     with st.spinner("Sedang menghitung prediksi dari ketiga model AI..."):
         
@@ -143,7 +150,14 @@ if st.sidebar.button("📊 Jalankan Prediksi", type="primary"):
             dates_df = [f"Bulan ke-{i+1}" for i in range(jumlah_bulan)]
             
         # 7. Tampilkan Output di Layout Utama
-        st.subheader(f"📈 Hasil Analisis & Prediksi untuk: {kategori_terpilih}")
+        st.markdown(f"""
+        <div style="display: flex; align-items: center; gap: 0.6rem; margin-top: 1.5rem; margin-bottom: 1rem;">
+            <span style="font-size: 1.5rem; color: #4f46e5;"><i class="fa-solid fa-chart-line"></i></span>
+            <h2 style="font-size: 1.5rem; font-weight: 700; color: #0f172a; margin: 0; font-family: 'Inter', sans-serif;">
+                Hasil Analisis & Prediksi untuk: {kategori_terpilih}
+            </h2>
+        </div>
+        """, unsafe_allow_html=True)
         
         # Membuat DataFrame Ringkasan Hasil (hanya data prediksi masa depan)
         df_hasil = pd.DataFrame({'Tanggal / Periode': dates_df})
@@ -207,11 +221,11 @@ if st.sidebar.button("📊 Jalankan Prediksi", type="primary"):
             }
 
         # Pembagian Tab Tampilan
-        tab1, tab2, tab3 = st.tabs(["📋 Tabel Data Lengkap", "📊 Grafik Historis & Prediksi", "🔍 Analisis Prediksi"])
+        tab1, tab2, tab3 = st.tabs(["Tabel Data Lengkap", "Grafik Historis & Prediksi", "Analisis Prediksi"])
         
         with tab1:
             # --- Sub-tabel 1: Data Historis ---
-            st.markdown("#### 📁 Data Historis Aktual")
+            st.markdown("#### <i class='fa-solid fa-clock-rotate-left' style='color: #4f46e5; margin-right: 8px;'></i>Data Historis Aktual", unsafe_allow_html=True)
             if hist_dates is not None and hist_values is not None:
                 df_historis = pd.DataFrame({
                     'Tanggal': hist_dates,
@@ -236,7 +250,7 @@ if st.sidebar.button("📊 Jalankan Prediksi", type="primary"):
             st.markdown("---")
             
             # --- Sub-tabel 2: Data Prediksi + Trend ---
-            st.markdown("#### 🔮 Data Prediksi Masa Depan")
+            st.markdown("#### <i class='fa-solid fa-wand-magic-sparkles' style='color: #10b981; margin-right: 8px;'></i>Data Prediksi Masa Depan", unsafe_allow_html=True)
             df_pred_display = pd.DataFrame({'Tanggal / Periode': dates_df})
             for nama_model, nilai in hasil_prediksi.items():
                 y_int = [int(round(float(v))) if not np.isnan(float(v)) else None for v in nilai]
@@ -409,7 +423,7 @@ if st.sidebar.button("📊 Jalankan Prediksi", type="primary"):
         # TAB 3: ANALISIS OTOMATIS
         # ================================================================
         with tab3:
-            st.markdown(f"### 🔍 Analisis Prediksi: **{kategori_terpilih}**")
+            st.markdown(f"### <i class='fa-solid fa-magnifying-glass-chart' style='color: #4f46e5; margin-right: 8px;'></i>Analisis Prediksi: **{kategori_terpilih}**", unsafe_allow_html=True)
             st.markdown(
                 f"Analisis berikut dihasilkan secara otomatis berdasarkan hasil prediksi "
                 f"**{jumlah_bulan} bulan ke depan** dari tiga model AI. "
@@ -421,7 +435,7 @@ if st.sidebar.button("📊 Jalankan Prediksi", type="primary"):
             st.markdown("---")
             
             # --- Ringkasan Komparatif ---
-            st.markdown("#### 📊 Ringkasan Komparatif Antar Model")
+            st.markdown("#### <i class='fa-solid fa-scale-balanced' style='color: #4f46e5; margin-right: 8px;'></i>Ringkasan Komparatif Antar Model", unsafe_allow_html=True)
             col_a, col_b, col_c = st.columns(3)
             model_means = {nm: info['mean_val'] for nm, info in analisis_model.items() if info['mean_val'] is not None}
             
@@ -444,7 +458,7 @@ if st.sidebar.button("📊 Jalankan Prediksi", type="primary"):
             st.markdown("---")
             
             # --- Analisis Per Model ---
-            st.markdown("#### 🤖 Analisis Per Model")
+            st.markdown("#### <i class='fa-solid fa-microchip' style='color: #4f46e5; margin-right: 8px;'></i>Analisis Per Model", unsafe_allow_html=True)
             
             emoji_model = {'Prophet': '🔵', 'ARIMA': '🔴', 'Holt-Winters': '🟢'}
             deskripsi_model = {
@@ -497,7 +511,7 @@ if st.sidebar.button("📊 Jalankan Prediksi", type="primary"):
             st.markdown("---")
             
             # --- Kesimpulan Umum ---
-            st.markdown("#### 📝 Kesimpulan & Rekomendasi")
+            st.markdown("#### <i class='fa-solid fa-clipboard-list' style='color: #4f46e5; margin-right: 8px;'></i>Kesimpulan &amp; Rekomendasi", unsafe_allow_html=True)
             
             if model_means and last_actual is not None:
                 all_pcts = [info['pct_vs_historis'] for info in analisis_model.values() if isinstance(info['pct_vs_historis'], float)]
@@ -528,7 +542,7 @@ if st.sidebar.button("📊 Jalankan Prediksi", type="primary"):
 else:
     st.markdown("""
     <div class="custom-card" style="text-align: center; padding: 4rem 2rem; border-radius: 16px; margin-top: 1rem;">
-        <div style="font-size: 3.5rem; margin-bottom: 1.5rem;">🔮</div>
+        <div style="font-size: 3.5rem; margin-bottom: 1.5rem; color: #4f46e5;"><i class="fa-solid fa-chart-line"></i></div>
         <h3 style="margin-bottom: 0.75rem; color: #0f172a; font-weight: 700; font-family: 'Inter', sans-serif;">Siap Melakukan Peramalan</h3>
         <p style="color: #64748b; max-width: 500px; margin: 0 auto 1.5rem auto; line-height: 1.6; font-family: 'Inter', sans-serif; font-size: 0.95rem;">
             Silakan pilih parameter peramalan di panel kontrol sebelah kiri, lalu klik tombol <strong>Jalankan Prediksi</strong> untuk memulai pengolahan data multi-model AI.

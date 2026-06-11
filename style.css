@@ -4,6 +4,7 @@
    ============================================================= */
 
 @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600&display=swap');
+@import url('https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css');
 
 /* GLOBAL BASICS */
 .stApp {
@@ -381,4 +382,41 @@ div[data-testid="stPyplot"] {
     font-size: 1.35rem;
     font-weight: 700;
     color: #0f172a;
+}
+
+/* TABS & BUTTONS FONT AWESOME ICONS PSEUDO-ELEMENTS */
+/* Tab 1 Icon: Table */
+div[data-testid="stTabBar"] button[id$="-tab-0"] p::before {
+    font-family: "Font Awesome 6 Free" !important;
+    font-weight: 900 !important;
+    content: "\f0ce" !important; /* fa-table */
+    margin-right: 8px;
+    font-size: 0.95rem;
+}
+
+/* Tab 2 Icon: Chart Line */
+div[data-testid="stTabBar"] button[id$="-tab-1"] p::before {
+    font-family: "Font Awesome 6 Free" !important;
+    font-weight: 900 !important;
+    content: "\f201" !important; /* fa-chart-line */
+    margin-right: 8px;
+    font-size: 0.95rem;
+}
+
+/* Tab 3 Icon: Magnifying Glass / Search */
+div[data-testid="stTabBar"] button[id$="-tab-2"] p::before {
+    font-family: "Font Awesome 6 Free" !important;
+    font-weight: 900 !important;
+    content: "\f002" !important; /* fa-magnifying-glass */
+    margin-right: 8px;
+    font-size: 0.95rem;
+}
+
+/* Sidebar Button Icon: Play */
+div.stButton > button::before {
+    font-family: "Font Awesome 6 Free" !important;
+    font-weight: 900 !important;
+    content: "\f04b" !important; /* fa-play */
+    margin-right: 8px;
+    font-size: 0.9rem;
 }
