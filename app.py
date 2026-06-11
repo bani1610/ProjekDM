@@ -1,4 +1,4 @@
-import streamlit as st
+﻿import streamlit as st
 import pandas as pd
 import numpy as np
 import pickle
@@ -9,20 +9,26 @@ from prophet.serialize import model_from_json
 
 # 1. Konfigurasi Halaman Streamlit
 st.set_page_config(
-    page_title="Aplikasi Prediksi Penumpang Kereta",
+    page_title="RailCast - Aplikasi Prediksi Penumpang Kereta",
     layout="wide",
     initial_sidebar_state="expanded"
 )
 
-# 2. Judul Aplikasi
-st.title("🚂 Aplikasi Peramalan Volume Penumpang Kereta Api")
-st.markdown("""
-Aplikasi ini digunakan untuk memprediksi jumlah penumpang kereta api di masa depan 
-menggunakan 3 algoritma AI sekaligus: **Prophet**, **ARIMA**, dan **Holt-Winters**.
-""")
-st.write("---")
+# Load external CSS stylesheet
+css_file = os.path.join(os.path.dirname(__file__), "style.css") if "__file__" in locals() else "style.css"
+if os.path.exists(css_file):
+    with open(css_file, "r", encoding="utf-8") as f:
+        st.markdown(f"<style>{f.read()}</style>", unsafe_allow_html=True)
 
-# 3. Definisikan Kategori Moda Transportasi (Harus sama dengan yang di Colab)
+# 2. Judul Aplikasi (Custom Premium Header)
+st.markdown("""
+<div class="hero-container">
+    <div class="hero-badge">📊 Data Mining Project &middot; Semester 4</div>
+    <h1 class="hero-title">RailCast</h1>
+    <p class="hero-subtitle">Platform Analisis & Peramalan Volume Penumpang Kereta Api menggunakan 3 algoritma AI sekaligus: <strong>Prophet</strong>, <strong>ARIMA</strong>, dan <strong>Holt-Winters</strong>.</p>
+</div>
+""", unsafe_allow_html=True)
+
 kategori_opsi = {
     "Kereta Bandara": "Kereta_Bandara",
     "Non Jabodetabek (Jawa)": "Non_Jabodetabek_Jawa",
@@ -33,10 +39,9 @@ kategori_opsi = {
     "LRT": "LRT"
 }
 
-# 4. Sidebar untuk Input Pengguna
+
 st.sidebar.header("🎛️ Panel Kontrol")
 
-# Pilihan Kategori Kereta
 kategori_terpilih = st.sidebar.selectbox(
     "Pilih Moda Transportasi Kereta:",
     options=list(kategori_opsi.keys())
@@ -255,17 +260,22 @@ if st.sidebar.button("📊 Jalankan Prediksi", type="primary"):
             # ================================================================
             # GRAFIK GABUNGAN: DATA HISTORIS + PREDIKSI MASA DEPAN
             # ================================================================
-            fig, ax = plt.subplots(figsize=(14, 6))
+            fig, ax = plt.subplots(figsize=(14, 6.5))
+            
+            # Set background color of the figure and axes to transparent/clean
+            fig.patch.set_facecolor('#ffffff')
+            ax.set_facecolor('#ffffff')
             
             # --- Plot 1: Data Aktual / Historis ---
             if hist_dates is not None and hist_values is not None:
                 ax.plot(
                     hist_dates, hist_values,
-                    color='#2c3e50', linewidth=2, marker='o', markersize=4,
+                    color='#334155', linewidth=2.5, marker='o', markersize=5,
+                    markerfacecolor='#334155', markeredgecolor='white', markeredgewidth=1.2,
                     label='Data Aktual (Historis)', zorder=5
                 )
                 
-                # Tambahkan shaded area confidence interval dari Prophet (opsional)
+                # Shaded area confidence interval dari Prophet (opsional)
                 if full_forecast_prophet is not None:
                     hist_len = len(hist_dates)
                     prophet_hist_slice = full_forecast_prophet.head(hist_len)
@@ -273,31 +283,47 @@ if st.sidebar.button("📊 Jalankan Prediksi", type="primary"):
                         prophet_hist_slice['ds'].dt.strftime('%Y-%m-%d').values,
                         prophet_hist_slice['yhat_lower'].values,
                         prophet_hist_slice['yhat_upper'].values,
-                        color='#3498db', alpha=0.1, label='Confidence Interval Prophet'
+                        color='#3b82f6', alpha=0.08, label='Confidence Interval Prophet'
                     )
             
-            # --- Garis Pemisah: Batas Akhir Data Historis ---
+            # --- Garis Pemisah & Shaded Region untuk Prediksi ---
             if hist_dates is not None and len(hist_dates) > 0:
                 last_hist_date = hist_dates[-1]
+                
+                # Shaded area untuk future prediction
+                if dates_df is not None and len(dates_df) > 0:
+                    ax.axvspan(
+                        last_hist_date, dates_df[-1],
+                        color='#f8fafc', alpha=0.7, label='Periode Prediksi (Masa Depan)', zorder=1
+                    )
+                
+                # Vertical line pemisah
                 ax.axvline(
                     x=last_hist_date,
-                    color='red', linestyle='--', linewidth=1.5, alpha=0.8
+                    color='#4f46e5', linestyle=':', linewidth=1.5, alpha=0.6, zorder=2
                 )
-                # Tentukan posisi y untuk label (di atas grafik)
+                
+                # Tentukan posisi y untuk label (di bagian atas grafik)
                 y_lim = ax.get_ylim()
+                y_pos = y_lim[0] + (y_lim[1] - y_lim[0]) * 0.95
                 ax.text(
-                    last_hist_date, y_lim[1],
+                    last_hist_date, y_pos,
                     '  ← Historis | Prediksi →  ',
-                    fontsize=8.5, color='red', va='top',
-                    ha='center', style='italic',
-                    bbox=dict(boxstyle='round,pad=0.3', facecolor='white', edgecolor='red', alpha=0.7)
+                    fontsize=8, color='#4f46e5', va='top',
+                    ha='center', fontweight='bold',
+                    bbox=dict(boxstyle='round,pad=0.3', facecolor='#e0e7ff', edgecolor='#c7d2fe', alpha=0.9, linewidth=1)
                 )
             
             # --- Plot 2: Prediksi Masa Depan dari setiap model ---
             warna_model = {
-                'Prophet': '#3498db',
-                'ARIMA': '#e74c3c',
-                'Holt-Winters': '#2ecc71'
+                'Prophet': '#3b82f6',
+                'ARIMA': '#f43f5e',
+                'Holt-Winters': '#10b981'
+            }
+            marker_model = {
+                'Prophet': 'o',
+                'ARIMA': 's',
+                'Holt-Winters': '^'
             }
             
             # Sambungkan titik terakhir historis ke titik pertama prediksi (bridging)
@@ -306,7 +332,8 @@ if st.sidebar.button("📊 Jalankan Prediksi", type="primary"):
             
             for nama_model, nilai in hasil_prediksi.items():
                 y_pred = [float(x) if isinstance(x, (int, float)) else np.nan for x in nilai]
-                warna = warna_model.get(nama_model, None)
+                warna = warna_model.get(nama_model, '#64748b')
+                marker_style = marker_model.get(nama_model, 'o')
                 
                 # Sambungkan dari titik terakhir historis
                 x_plot = list(bridge_date) + list(dates_df)
@@ -314,8 +341,9 @@ if st.sidebar.button("📊 Jalankan Prediksi", type="primary"):
                 
                 ax.plot(
                     x_plot, y_plot,
-                    marker='o', markersize=6, linewidth=2.5,
-                    linestyle='--' if nama_model != 'Prophet' else '-',
+                    marker=marker_style, markersize=7, linewidth=2.5,
+                    markerfacecolor=warna, markeredgecolor='white', markeredgewidth=1.5,
+                    linestyle='--',
                     color=warna,
                     label=f'Prediksi {nama_model}',
                     zorder=4
@@ -328,32 +356,53 @@ if st.sidebar.button("📊 Jalankan Prediksi", type="primary"):
                             f'{int(round(yp)):,}',
                             xy=(xp, yp),
                             xytext=(0, 10), textcoords='offset points',
-                            fontsize=7, ha='center', color=warna,
-                            fontweight='bold'
+                            fontsize=8, ha='center', color=warna,
+                            fontweight='bold',
+                            bbox=dict(boxstyle='round,pad=0.15', facecolor='white', edgecolor=warna, alpha=0.8, linewidth=0.5)
                         )
             
             # --- Konfigurasi Grafik ---
             ax.set_title(
-                f"Data Historis & Prediksi Volume Penumpang ({jumlah_bulan} Bulan ke Depan)\n{kategori_terpilih}",
-                fontweight='bold', fontsize=13, pad=15
+                f"Analisis Tren Historis vs Prediksi Volume Penumpang\n{kategori_terpilih} ({jumlah_bulan} Bulan ke Depan)",
+                fontweight='bold', fontsize=13, pad=15, color='#0f172a'
             )
-            ax.set_ylabel("Volume Penumpang", fontsize=11)
-            ax.set_xlabel("Periode (Bulan)", fontsize=11)
-            ax.legend(loc='upper left', fontsize=9, framealpha=0.9)
-            ax.grid(True, linestyle='--', alpha=0.4)
+            ax.set_ylabel("Volume Penumpang", fontsize=11, fontweight='semibold', color='#334155')
+            ax.set_xlabel("Periode Waktu", fontsize=11, fontweight='semibold', color='#334155')
             
-            # Format label sumbu X agar tidak penuh / terbaca
-            all_x_labels = ax.get_xticklabels()
-            n_ticks = len(ax.get_xticks())
-            step = max(1, n_ticks // 12)  # Tampilkan maksimal ~12 label
-            plt.xticks(rotation=45, ha='right', fontsize=8)
+            # Format label sumbu Y agar memiliki pemisah ribuan
+            import matplotlib.ticker as ticker
+            ax.get_yaxis().set_major_formatter(ticker.FuncFormatter(lambda x, p: format(int(x), ',')))
+            
+            # Style Legend
+            ax.legend(
+                loc='upper left', 
+                frameon=True, 
+                facecolor='white', 
+                edgecolor='#e2e8f0', 
+                framealpha=0.95, 
+                fontsize=9.5
+            )
+            
+            # Soft Gridlines horizontal saja
+            ax.grid(True, axis='y', linestyle=':', alpha=0.6, color='#cbd5e1')
+            ax.grid(False, axis='x')
+            
+            # Spines styling
+            ax.spines['top'].set_visible(False)
+            ax.spines['right'].set_visible(False)
+            ax.spines['left'].set_color('#cbd5e1')
+            ax.spines['bottom'].set_color('#cbd5e1')
+            
+            # Format label sumbu X
+            plt.xticks(rotation=45, ha='right', fontsize=8.5, color='#475569')
+            plt.yticks(fontsize=8.5, color='#475569')
             
             plt.tight_layout()
             st.pyplot(fig)
             st.caption(
-                "📌 **Keterangan:** Garis hitam = data aktual historis. "
-                "Garis putus-putus = prediksi masa depan. "
-                "Garis merah vertikal = batas antara data historis dan prediksi."
+                "📌 **Keterangan:** Garis gelap solid = data aktual historis. "
+                "Garis putus-putus berwarna = prediksi model AI ke depan. "
+                "Wilayah berbayang biru muda di kanan = rentang waktu prediksi."
             )
         
         # ================================================================
@@ -477,5 +526,12 @@ if st.sidebar.button("📊 Jalankan Prediksi", type="primary"):
                 st.info("Tidak cukup data untuk menghasilkan kesimpulan otomatis.")
 
 else:
-    # Tampilan awal saat tombol belum ditekan
-    st.info("💡 Silakan pilih parameter di panel sebelah kiri, lalu klik tombol **Jalankan Prediksi** untuk melihat hasil analisis AI.")
+    st.markdown("""
+    <div class="custom-card" style="text-align: center; padding: 4rem 2rem; border-radius: 16px; margin-top: 1rem;">
+        <div style="font-size: 3.5rem; margin-bottom: 1.5rem;">🔮</div>
+        <h3 style="margin-bottom: 0.75rem; color: #0f172a; font-weight: 700; font-family: 'Inter', sans-serif;">Siap Melakukan Peramalan</h3>
+        <p style="color: #64748b; max-width: 500px; margin: 0 auto 1.5rem auto; line-height: 1.6; font-family: 'Inter', sans-serif; font-size: 0.95rem;">
+            Silakan pilih parameter peramalan di panel kontrol sebelah kiri, lalu klik tombol <strong>Jalankan Prediksi</strong> untuk memulai pengolahan data multi-model AI.
+        </p>
+    </div>
+    """, unsafe_allow_html=True)

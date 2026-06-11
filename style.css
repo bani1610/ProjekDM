@@ -1,0 +1,384 @@
+/* =============================================================
+   RailCast — Modern Premium Design System
+   Stack: Inter Font + Slate UI
+   ============================================================= */
+
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600&display=swap');
+
+/* GLOBAL BASICS */
+.stApp {
+    background-color: #f8fafc !important;
+    color: #0f172a !important;
+    font-family: 'Inter', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif !important;
+}
+
+/* Adjust main layout padding and container width */
+.main .block-container {
+    padding: 3rem 4rem !important;
+    max-width: 1400px !important;
+}
+
+/* SIDEBAR STYLING - DARK THEME */
+section[data-testid="stSidebar"] {
+    background-color: #0f172a !important;
+    border-right: 1px solid #1e293b !important;
+}
+
+/* Make sidebar text white and readable */
+section[data-testid="stSidebar"] h1, 
+section[data-testid="stSidebar"] h2, 
+section[data-testid="stSidebar"] h3, 
+section[data-testid="stSidebar"] h4, 
+section[data-testid="stSidebar"] h5, 
+section[data-testid="stSidebar"] h6, 
+section[data-testid="stSidebar"] p, 
+section[data-testid="stSidebar"] label {
+    color: #f1f5f9 !important;
+}
+
+/* Sidebar Inputs - Selectbox and Dropdowns */
+section[data-testid="stSidebar"] div[data-baseweb="select"] > div {
+    background-color: #1e293b !important;
+    border: 1px solid #334155 !important;
+    color: #ffffff !important;
+    border-radius: 8px !important;
+    transition: all 0.2s ease-in-out !important;
+}
+
+section[data-testid="stSidebar"] div[data-baseweb="select"] > div:hover {
+    border-color: #4f46e5 !important;
+}
+
+/* Force all text/labels inside selectboxes and sliders to be white */
+section[data-testid="stSidebar"] div[data-testid="stSelectbox"] * {
+    color: #ffffff !important;
+}
+
+section[data-testid="stSidebar"] div[data-testid="stSlider"] * {
+    color: #ffffff !important;
+}
+
+/* Adjust color for selectbox arrows */
+section[data-testid="stSidebar"] div[data-baseweb="select"] svg {
+    fill: #ffffff !important;
+    color: #ffffff !important;
+}
+
+/* Dropdown overlay menu style */
+div[role="listbox"] {
+    background-color: #1e293b !important;
+    border: 1px solid #334155 !important;
+    border-radius: 8px !important;
+}
+
+div[role="option"] {
+    color: #ffffff !important;
+    font-family: 'Inter', sans-serif !important;
+    transition: background-color 0.2s !important;
+}
+
+div[role="option"] * {
+    color: #ffffff !important;
+}
+
+div[role="option"]:hover, 
+div[role="option"][aria-selected="true"] {
+    background-color: #312e81 !important;
+    color: #ffffff !important;
+}
+
+div[role="option"]:hover *, 
+div[role="option"][aria-selected="true"] * {
+    background-color: transparent !important;
+    color: #ffffff !important;
+}
+
+/* Sidebar Slider Styling & Cohesive Colors */
+section[data-testid="stSidebar"] div[data-testid="stSlider"] {
+    padding-top: 15px;
+    padding-bottom: 25px;
+}
+
+/* Style the slider thumb */
+section[data-testid="stSidebar"] div[data-testid="stSlider"] div[role="slider"] {
+    background-color: #4f46e5 !important;
+    border: 2px solid #ffffff !important;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2) !important;
+}
+
+/* Style the active progress track */
+section[data-testid="stSidebar"] div[data-testid="stSlider"] div[data-baseweb="slider"] > div > div > div {
+    background-color: #4f46e5 !important;
+}
+
+/* Style the background track */
+section[data-testid="stSidebar"] div[data-testid="stSlider"] div[data-baseweb="slider"] > div > div {
+    background-color: #334155 !important;
+}
+
+/* Force all labels and tick/range values to be white */
+section[data-testid="stSidebar"] div[data-testid="stSlider"] span,
+section[data-testid="stSidebar"] div[data-testid="stSlider"] div {
+    color: #ffffff !important;
+}
+
+/* BUTTONS - GRADIENT TRANSITION */
+div.stButton > button {
+    background: linear-gradient(135deg, #3b82f6 0%, #4f46e5 100%) !important;
+    color: #ffffff !important;
+    font-weight: 600 !important;
+    border: none !important;
+    border-radius: 8px !important;
+    padding: 0.6rem 1.8rem !important;
+    transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1) !important;
+    box-shadow: 0 4px 12px rgba(79, 70, 229, 0.25) !important;
+    width: 100% !important;
+    display: inline-flex !important;
+    align-items: center !important;
+    justify-content: center !important;
+    font-size: 0.95rem !important;
+}
+
+div.stButton > button:hover {
+    transform: translateY(-2px) !important;
+    box-shadow: 0 8px 20px rgba(79, 70, 229, 0.4) !important;
+    background: linear-gradient(135deg, #2563eb 0%, #4338ca 100%) !important;
+    border: none !important;
+}
+
+div.stButton > button:active {
+    transform: translateY(1px) !important;
+    box-shadow: 0 2px 6px rgba(79, 70, 229, 0.2) !important;
+}
+
+/* METRIC CARDS OVERHAUL */
+div[data-testid="stMetric"] {
+    background-color: #ffffff !important;
+    border: 1px solid #e2e8f0 !important;
+    border-radius: 12px !important;
+    padding: 1.25rem 1.5rem !important;
+    box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.03), 0 2px 4px -1px rgba(0, 0, 0, 0.02) !important;
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1) !important;
+    border-left: 4px solid #3b82f6 !important; /* Cool Indigo/Blue indicator */
+}
+
+/* Give different indicators based on columns if possible, but general style looks premium */
+div[data-testid="stMetric"]:hover {
+    transform: translateY(-3px) !important;
+    box-shadow: 0 12px 20px -5px rgba(0, 0, 0, 0.08), 0 4px 8px -2px rgba(0, 0, 0, 0.03) !important;
+    border-color: #cbd5e1 !important;
+}
+
+div[data-testid="stMetricLabel"] {
+    font-size: 0.85rem !important;
+    font-weight: 600 !important;
+    color: #64748b !important;
+    text-transform: uppercase !important;
+    letter-spacing: 0.08em !important;
+    font-family: 'Inter', sans-serif !important;
+}
+
+/* Force dark color on metric labels and values to override browser dark mode */
+div[data-testid="stMetricLabel"] *, div[data-testid="stMetricLabel"] {
+    color: #64748b !important;
+}
+
+div[data-testid="stMetricValue"] {
+    font-size: 2rem !important;
+    font-weight: 800 !important;
+    color: #0f172a !important;
+    margin-top: 0.3rem !important;
+    font-family: 'Inter', sans-serif !important;
+    letter-spacing: -0.02em !important;
+}
+
+div[data-testid="stMetricValue"] *, div[data-testid="stMetricValue"] {
+    color: #0f172a !important;
+}
+
+/* TABS STYLING */
+div[data-testid="stTabBar"] {
+    border-bottom: 2px solid #e2e8f0 !important;
+    margin-bottom: 1.8rem !important;
+    gap: 1.5rem !important;
+}
+
+div[data-testid="stTabBar"] button {
+    font-size: 0.95rem !important;
+    font-weight: 600 !important;
+    color: #64748b !important;
+    padding: 0.75rem 1.25rem !important;
+    border: none !important;
+    background: transparent !important;
+    transition: all 0.2s ease !important;
+    border-radius: 0px !important;
+}
+
+/* Force colors on tab buttons & text inside them */
+div[data-testid="stTabBar"] button,
+div[data-testid="stTabBar"] button * {
+    color: #64748b !important;
+}
+
+div[data-testid="stTabBar"] button[aria-selected="true"] {
+    color: #4f46e5 !important;
+    border-bottom: 3px solid #4f46e5 !important;
+}
+
+div[data-testid="stTabBar"] button[aria-selected="true"],
+div[data-testid="stTabBar"] button[aria-selected="true"] * {
+    color: #4f46e5 !important;
+}
+
+div[data-testid="stTabBar"] button:hover,
+div[data-testid="stTabBar"] button:hover * {
+    color: #3b82f6 !important;
+}
+
+/* DATA FRAME / TABLE STYLE */
+div[data-testid="stDataFrame"], div[data-testid="stTable"] {
+    border: 1px solid #e2e8f0 !important;
+    border-radius: 12px !important;
+    overflow: hidden !important;
+    box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.02) !important;
+}
+
+/* EXPANDERS */
+div[data-testid="stExpander"] {
+    background-color: #ffffff !important;
+    border: 1px solid #e2e8f0 !important;
+    border-radius: 12px !important;
+    box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.02) !important;
+    margin-bottom: 1.2rem !important;
+    overflow: hidden !important;
+}
+
+div[data-testid="stExpander"] details {
+    border: none !important;
+}
+
+div[data-testid="stExpander"] summary {
+    padding: 1rem 1.25rem !important;
+    font-weight: 600 !important;
+    color: #0f172a !important;
+    background-color: #f8fafc !important;
+    border-bottom: 1px solid #e2e8f0 !important;
+}
+
+div[data-testid="stExpander"] summary:hover {
+    background-color: #f1f5f9 !important;
+}
+
+div[data-testid="stExpander"] div[data-testid="stExpanderDetails"] {
+    padding: 1.5rem !important;
+    background-color: #ffffff !important;
+}
+
+/* CUSTOM HERO CONTAINER */
+.hero-container {
+    background: linear-gradient(135deg, #0f172a 0%, #1e1b4b 50%, #311042 100%);
+    padding: 3.5rem 3rem;
+    border-radius: 16px;
+    color: white;
+    margin-bottom: 2.5rem;
+    box-shadow: 0 12px 30px -10px rgba(15, 23, 42, 0.4);
+    position: relative;
+    overflow: hidden;
+}
+
+.hero-container::before {
+    content: "";
+    position: absolute;
+    top: -50%;
+    left: -50%;
+    width: 200%;
+    height: 200%;
+    background: radial-gradient(circle, rgba(99, 102, 241, 0.12) 0%, transparent 60%);
+    pointer-events: none;
+}
+
+.hero-badge {
+    background-color: rgba(99, 102, 241, 0.2);
+    color: #c7d2fe;
+    padding: 4px 14px;
+    border-radius: 9999px;
+    font-size: 0.82rem;
+    font-weight: 700;
+    display: inline-flex;
+    align-items: center;
+    margin-bottom: 1.2rem;
+    border: 1px solid rgba(99, 102, 241, 0.3);
+    letter-spacing: 0.05em;
+    text-transform: uppercase;
+}
+
+.hero-title {
+    font-size: 2.75rem;
+    font-weight: 800;
+    margin: 0 0 0.75rem 0;
+    letter-spacing: -0.03em;
+    background: linear-gradient(to right, #ffffff, #c7d2fe, #e0e7ff);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    font-family: 'Inter', sans-serif !important;
+}
+
+.hero-subtitle {
+    font-size: 1.15rem;
+    color: #94a3b8;
+    margin: 0;
+    max-width: 850px;
+    line-height: 1.6;
+    font-weight: 400;
+}
+
+/* CUSTOM CARDS */
+.custom-card {
+    background-color: #ffffff;
+    border: 1px solid #e2e8f0;
+    border-radius: 12px;
+    padding: 1.5rem;
+    box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.03), 0 2px 4px -1px rgba(0, 0, 0, 0.02);
+    margin-bottom: 1.5rem;
+}
+
+.custom-card-title {
+    font-size: 1.1rem;
+    font-weight: 700;
+    color: #0f172a;
+    margin-bottom: 1rem;
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+}
+
+/* ALERTS & INFO BOXES OVERRIDE */
+div[data-testid="stAlert"] {
+    border-radius: 12px !important;
+    border: 1px solid rgba(0, 0, 0, 0.04) !important;
+    box-shadow: 0 4px 10px rgba(0, 0, 0, 0.02) !important;
+    padding: 1rem 1.25rem !important;
+}
+
+/* MATPLOTLIB EMBED ALIGNMENT */
+div[data-testid="stPyplot"] {
+    background-color: #ffffff !important;
+    border: 1px solid #e2e8f0 !important;
+    border-radius: 12px !important;
+    padding: 1.5rem !important;
+    box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.02) !important;
+}
+
+/* SECTION HEADER SUBTITLE STYLING */
+.section-header {
+    margin-top: 2rem;
+    margin-bottom: 1.5rem;
+    padding-bottom: 0.5rem;
+    border-bottom: 1px solid #e2e8f0;
+}
+
+.section-header-title {
+    font-size: 1.35rem;
+    font-weight: 700;
+    color: #0f172a;
+}
