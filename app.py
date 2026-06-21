@@ -6,6 +6,8 @@ import json
 import os
 import matplotlib.pyplot as plt
 from prophet.serialize import model_from_json
+from statsmodels.tsa.arima.model import ARIMAResults
+from statsmodels.tsa.holtwinters import HoltWintersResults
 
 # 1. Konfigurasi Halaman Streamlit
 st.set_page_config(
@@ -84,13 +86,27 @@ def load_all_models(suffix):
             
     # Load ARIMA
     if os.path.exists(path_arima):
-        with open(path_arima, 'rb') as f:
-            arima_model = pickle.load(f)
-            
+        try:
+            arima_model = ARIMAResults.load(path_arima)
+        except Exception:
+            try:
+                with open(path_arima, 'rb') as f:
+                    arima_model = pickle.load(f)
+            except Exception as e:
+                st.warning(f"⚠️ Model ARIMA gagal dimuat: {e}")
+                arima_model = None
+
     # Load Holt-Winters
     if os.path.exists(path_hw):
-        with open(path_hw, 'rb') as f:
-            hw_model = pickle.load(f)
+        try:
+            hw_model = HoltWintersResults.load(path_hw)
+        except Exception:
+            try:
+                with open(path_hw, 'rb') as f:
+                    hw_model = pickle.load(f)
+            except Exception as e:
+                st.warning(f"⚠️ Model Holt-Winters gagal dimuat: {e}")
+                hw_model = None
             
     return prophet_model, arima_model, hw_model
 
