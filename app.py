@@ -1,13 +1,14 @@
 import streamlit as st
 import pandas as pd
 import numpy as np
-import pickle
 import json
 import os
+import warnings
 import matplotlib.pyplot as plt
 from prophet.serialize import model_from_json
-from statsmodels.tsa.arima.model import ARIMAResults
-from statsmodels.tsa.holtwinters import HoltWintersResults
+from statsmodels.tsa.arima.model import ARIMA
+from statsmodels.tsa.holtwinters import ExponentialSmoothing
+warnings.filterwarnings('ignore')
 
 # 1. Konfigurasi Halaman Streamlit
 st.set_page_config(
@@ -67,47 +68,42 @@ jumlah_bulan = st.sidebar.slider(
 file_suffix = kategori_opsi[kategori_terpilih]
 folder_model = "saved_models"
 
-# 5. Fungsi untuk Memuat Model (Caching agar aplikasi cepat saat dipindah-pindah menu)
+# 5. Fungsi untuk Memuat Model
+# ARIMA & HW di-fit langsung dari data training (JSON) agar tidak bergantung
+# pada versi pickle/scipy — menghindari error '_xp' di deployment.
 @st.cache_resource
 def load_all_models(suffix):
     prophet_model = None
     arima_model = None
     hw_model = None
-    
-    # Path file masing-masing model
-    path_prophet = os.path.join(folder_model, f"prophet_{suffix}.json")
-    path_arima = os.path.join(folder_model, f"arima_{suffix}.pkl")
-    path_hw = os.path.join(folder_model, f"hw_{suffix}.pkl")
-    
-    # Load Prophet
+
+    path_prophet  = os.path.join(folder_model, f"prophet_{suffix}.json")
+    path_traindata = os.path.join(folder_model, f"traindata_{suffix}.json")
+
+    # Load Prophet (aman — disimpan sebagai JSON murni)
     if os.path.exists(path_prophet):
         with open(path_prophet, 'r') as f:
             prophet_model = model_from_json(json.load(f))
-            
-    # Load ARIMA
-    if os.path.exists(path_arima):
-        try:
-            arima_model = ARIMAResults.load(path_arima)
-        except Exception:
-            try:
-                with open(path_arima, 'rb') as f:
-                    arima_model = pickle.load(f)
-            except Exception as e:
-                st.warning(f"⚠️ Model ARIMA gagal dimuat: {e}")
-                arima_model = None
 
-    # Load Holt-Winters
-    if os.path.exists(path_hw):
+    # Fit ARIMA & Holt-Winters dari data training JSON (tanpa pickle sama sekali)
+    if os.path.exists(path_traindata):
+        with open(path_traindata, 'r') as f:
+            y_train = json.load(f)["y"]
+
+        # Fit ARIMA
         try:
-            hw_model = HoltWintersResults.load(path_hw)
-        except Exception:
-            try:
-                with open(path_hw, 'rb') as f:
-                    hw_model = pickle.load(f)
-            except Exception as e:
-                st.warning(f"⚠️ Model Holt-Winters gagal dimuat: {e}")
-                hw_model = None
-            
+            fit_arima = ARIMA(y_train, order=(1, 1, 1)).fit()
+            arima_model = fit_arima
+        except Exception as e:
+            st.warning(f"⚠️ ARIMA gagal di-fit: {e}")
+
+        # Fit Holt-Winters
+        try:
+            fit_hw = ExponentialSmoothing(y_train, trend='add', seasonal=None).fit()
+            hw_model = fit_hw
+        except Exception as e:
+            st.warning(f"⚠️ Holt-Winters gagal di-fit: {e}")
+
     return prophet_model, arima_model, hw_model
 
 # Eksekusi pemuatan model
