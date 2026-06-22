@@ -4,3 +4,4 @@ numpy
 prophet
 statsmodels
 matplotlib
+plotly
