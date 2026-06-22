@@ -284,151 +284,208 @@ if st.sidebar.button("Jalankan Prediksi", type="primary"):
             
         with tab2:
             # ================================================================
-            # GRAFIK GABUNGAN: DATA HISTORIS + PREDIKSI MASA DEPAN
+            # GRAFIK GABUNGAN: DATA HISTORIS + PREDIKSI MASA DEPAN (Plotly)
             # ================================================================
-            fig, ax = plt.subplots(figsize=(14, 6.5))
-            
-            # Set background color of the figure and axes to transparent/clean
-            fig.patch.set_facecolor('#ffffff')
-            ax.set_facecolor('#ffffff')
-            
-            # --- Plot 1: Data Aktual / Historis ---
-            if hist_dates is not None and hist_values is not None:
-                ax.plot(
-                    hist_dates, hist_values,
-                    color='#334155', linewidth=2.5, marker='o', markersize=5,
-                    markerfacecolor='#334155', markeredgecolor='white', markeredgewidth=1.2,
-                    label='Data Aktual (Historis)', zorder=5
-                )
-                
-                # Shaded area confidence interval dari Prophet (opsional)
-                if full_forecast_prophet is not None:
-                    hist_len = len(hist_dates)
-                    prophet_hist_slice = full_forecast_prophet.head(hist_len)
-                    ax.fill_between(
-                        prophet_hist_slice['ds'].dt.strftime('%Y-%m-%d').values,
-                        prophet_hist_slice['yhat_lower'].values,
-                        prophet_hist_slice['yhat_upper'].values,
-                        color='#3b82f6', alpha=0.08, label='Confidence Interval Prophet'
-                    )
-            
-            # --- Garis Pemisah & Shaded Region untuk Prediksi ---
-            if hist_dates is not None and len(hist_dates) > 0:
-                last_hist_date = hist_dates[-1]
-                
-                # Shaded area untuk future prediction
-                if dates_df is not None and len(dates_df) > 0:
-                    ax.axvspan(
-                        last_hist_date, dates_df[-1],
-                        color='#f8fafc', alpha=0.7, label='Periode Prediksi (Masa Depan)', zorder=1
-                    )
-                
-                # Vertical line pemisah
-                ax.axvline(
-                    x=last_hist_date,
-                    color='#4f46e5', linestyle=':', linewidth=1.5, alpha=0.6, zorder=2
-                )
-                
-                # Tentukan posisi y untuk label (di bagian atas grafik)
-                y_lim = ax.get_ylim()
-                y_pos = y_lim[0] + (y_lim[1] - y_lim[0]) * 0.95
-                ax.text(
-                    last_hist_date, y_pos,
-                    '  ← Historis | Prediksi →  ',
-                    fontsize=8, color='#4f46e5', va='top',
-                    ha='center', fontweight='bold',
-                    bbox=dict(boxstyle='round,pad=0.3', facecolor='#e0e7ff', edgecolor='#c7d2fe', alpha=0.9, linewidth=1)
-                )
-            
-            # --- Plot 2: Prediksi Masa Depan dari setiap model ---
+            import plotly.graph_objects as go
+            from datetime import datetime as dt
+
+            def to_dt(val):
+                if isinstance(val, str):
+                    return dt.strptime(val, '%Y-%m-%d')
+                try:
+                    return pd.Timestamp(val).to_pydatetime()
+                except Exception:
+                    return val
+
+            hist_dt  = [to_dt(d) for d in hist_dates] if hist_dates is not None else []
+            dates_dt = [to_dt(d) for d in dates_df]   if dates_df  is not None else []
+
+            fig_plotly = go.Figure()
+
+            # --- Confidence Interval Prophet (historis saja, sangat tipis) ---
+            if full_forecast_prophet is not None and hist_dt:
+                hist_len = len(hist_dt)
+                ph = full_forecast_prophet.head(hist_len)
+                ci_dates = [to_dt(d) for d in ph['ds'].values]
+                fig_plotly.add_trace(go.Scatter(
+                    x=ci_dates + ci_dates[::-1],
+                    y=list(ph['yhat_upper'].values) + list(ph['yhat_lower'].values[::-1]),
+                    fill='toself',
+                    fillcolor='rgba(59,130,246,0.07)',
+                    line=dict(color='rgba(0,0,0,0)'),
+                    name='Confidence Interval Prophet',
+                    hoverinfo='skip',
+                    showlegend=True
+                ))
+
+            # --- Shaded area periode prediksi ---
+            if hist_dt and dates_dt:
+                last_hist = hist_dt[-1]
+                last_pred = dates_dt[-1]
+                y_min_shade = min(hist_values) * 0.97 if hist_values is not None else 0
+                y_max_shade = max(hist_values) * 1.15 if hist_values is not None else 1
+                fig_plotly.add_trace(go.Scatter(
+                    x=[last_hist, last_pred, last_pred, last_hist],
+                    y=[y_max_shade, y_max_shade, y_min_shade, y_min_shade],
+                    fill='toself',
+                    fillcolor='rgba(240,244,255,0.6)',
+                    line=dict(color='rgba(0,0,0,0)'),
+                    name='Periode Prediksi (Masa Depan)',
+                    hoverinfo='skip',
+                    showlegend=True
+                ))
+
+            # --- Data Aktual / Historis ---
+            if hist_dt and hist_values is not None:
+                fig_plotly.add_trace(go.Scatter(
+                    x=hist_dt,
+                    y=list(hist_values),
+                    mode='lines+markers',
+                    name='Data Aktual (Historis)',
+                    line=dict(color='#334155', width=2.5),
+                    marker=dict(size=6, color='#334155',
+                                line=dict(color='white', width=1.5)),
+                    hovertemplate='<b>%{x|%Y-%m}</b><br>Aktual: %{y:,.0f}<extra></extra>'
+                ))
+
+            # --- Prediksi tiap model ---
             warna_model = {
-                'Prophet': '#3b82f6',
-                'ARIMA': '#f43f5e',
-                'Holt-Winters': '#10b981'
+                'Prophet':     '#3b82f6',
+                'ARIMA':       '#f43f5e',
+                'Holt-Winters':'#10b981'
             }
             marker_model = {
-                'Prophet': 'o',
-                'ARIMA': 's',
-                'Holt-Winters': '^'
+                'Prophet':     'circle',
+                'ARIMA':       'square',
+                'Holt-Winters':'triangle-up'
             }
-            
-            # Sambungkan titik terakhir historis ke titik pertama prediksi (bridging)
-            bridge_date = [hist_dates[-1]] if hist_dates is not None and len(hist_dates) > 0 else []
-            bridge_val  = [hist_values[-1]] if hist_values is not None and len(hist_values) > 0 else []
-            
+            bridge_dt  = [hist_dt[-1]] if hist_dt else []
+            bridge_val = [float(hist_values[-1])] if hist_values is not None and len(hist_values) > 0 else []
+
             for nama_model, nilai in hasil_prediksi.items():
-                y_pred = [float(x) if isinstance(x, (int, float)) else np.nan for x in nilai]
-                warna = warna_model.get(nama_model, '#64748b')
-                marker_style = marker_model.get(nama_model, 'o')
-                
-                # Sambungkan dari titik terakhir historis
-                x_plot = list(bridge_date) + list(dates_df)
-                y_plot = list(bridge_val)  + y_pred
-                
-                ax.plot(
-                    x_plot, y_plot,
-                    marker=marker_style, markersize=7, linewidth=2.5,
-                    markerfacecolor=warna, markeredgecolor='white', markeredgewidth=1.5,
-                    linestyle='--',
-                    color=warna,
-                    label=f'Prediksi {nama_model}',
-                    zorder=4
-                )
-                
-                # Tambahkan anotasi nilai pada titik prediksi
-                for i, (xp, yp) in enumerate(zip(dates_df, y_pred)):
-                    if not np.isnan(yp):
-                        ax.annotate(
-                            f'{int(round(yp)):,}',
-                            xy=(xp, yp),
-                            xytext=(0, 10), textcoords='offset points',
-                            fontsize=8, ha='center', color=warna,
-                            fontweight='bold',
-                            bbox=dict(boxstyle='round,pad=0.15', facecolor='white', edgecolor=warna, alpha=0.8, linewidth=0.5)
+                y_pred = [float(x) if isinstance(x, (int, float)) else None for x in nilai]
+                warna  = warna_model.get(nama_model, '#64748b')
+                mkr    = marker_model.get(nama_model, 'circle')
+
+                # Garis prediksi (termasuk bridging dari titik terakhir historis)
+                fig_plotly.add_trace(go.Scatter(
+                    x=bridge_dt + dates_dt,
+                    y=bridge_val + y_pred,
+                    mode='lines+markers',
+                    name=f'Prediksi {nama_model}',
+                    line=dict(color=warna, width=2.2, dash='dash'),
+                    marker=dict(size=8, color=warna, symbol=mkr,
+                                line=dict(color='white', width=1.5)),
+                    hovertemplate='<b>%{x|%Y-%m}</b><br>' + nama_model + ': %{y:,.0f}<extra></extra>'
+                ))
+
+                # Anotasi nilai pada titik prediksi saja — offset pixel tetap agar tidak melayang
+                ay_px = {'Prophet': -28, 'ARIMA': 22, 'Holt-Winters': -48}
+                ay_val = ay_px.get(nama_model, -20)
+
+                for xp, yp in zip(dates_dt, y_pred):
+                    if yp is not None:
+                        fig_plotly.add_annotation(
+                            x=xp,
+                            y=yp,
+                            text=f"<b>{int(round(yp)):,}</b>",
+                            showarrow=True,
+                            arrowhead=0,
+                            arrowwidth=1,
+                            arrowcolor=warna,
+                            ax=0,
+                            ay=ay_val,
+                            ayref='pixel',
+                            axref='pixel',
+                            font=dict(size=8.5, color=warna),
+                            bgcolor='rgba(255,255,255,0.88)',
+                            bordercolor=warna,
+                            borderwidth=1,
+                            borderpad=2,
+                            xanchor='center',
+                            yanchor='middle'
                         )
-            
-            # --- Konfigurasi Grafik ---
-            ax.set_title(
-                f"Analisis Tren Historis vs Prediksi Volume Penumpang\n{kategori_terpilih} ({jumlah_bulan} Bulan ke Depan)",
-                fontweight='bold', fontsize=13, pad=15, color='#0f172a'
+
+            # --- Garis pemisah vertikal Historis | Prediksi ---
+            if hist_dt:
+                fig_plotly.add_vline(
+                    x=hist_dt[-1].timestamp() * 1000,
+                    line_width=1.5,
+                    line_dash='dot',
+                    line_color='#4f46e5',
+                    opacity=0.7
+                )
+                fig_plotly.add_annotation(
+                    x=hist_dt[-1],
+                    y=1.0,
+                    yref='paper',
+                    text='← Historis | Prediksi →',
+                    showarrow=False,
+                    font=dict(size=9, color='#4f46e5', family='Inter'),
+                    bgcolor='#e0e7ff',
+                    bordercolor='#c7d2fe',
+                    borderwidth=1,
+                    borderpad=4,
+                    xanchor='center',
+                    yanchor='bottom'
+                )
+
+            # --- Layout & styling ---
+            total_months = len(hist_dt) + len(dates_dt)
+            fig_plotly.update_layout(
+                title=dict(
+                    text=(
+                        f'Analisis Tren Historis vs Prediksi Volume Penumpang<br>'
+                        f'<span style="font-size:13px;color:#64748b">'
+                        f'{kategori_terpilih} \u2014 {jumlah_bulan} Bulan ke Depan</span>'
+                    ),
+                    font=dict(size=15, color='#0f172a', family='Inter'),
+                    x=0.5, xanchor='center', y=0.97
+                ),
+                xaxis=dict(
+                    title='Periode Waktu',
+                    tickformat='%Y-%m',
+                    dtick='M1' if total_months <= 18 else 'M2',
+                    tickangle=-45,
+                    showgrid=False,
+                    linecolor='#cbd5e1',
+                    tickfont=dict(size=10, color='#475569'),
+                    title_font=dict(size=11, color='#334155')
+                ),
+                yaxis=dict(
+                    title='Volume Penumpang',
+                    tickformat=',',
+                    showgrid=True,
+                    gridcolor='rgba(203,213,225,0.5)',
+                    gridwidth=1,
+                    linecolor='#cbd5e1',
+                    tickfont=dict(size=10, color='#475569'),
+                    title_font=dict(size=11, color='#334155'),
+                ),
+                legend=dict(
+                    orientation='v',
+                    x=0.01, y=0.99,
+                    xanchor='left', yanchor='top',
+                    bgcolor='rgba(255,255,255,0.95)',
+                    bordercolor='#e2e8f0',
+                    borderwidth=1,
+                    font=dict(size=10)
+                ),
+                plot_bgcolor='#ffffff',
+                paper_bgcolor='#ffffff',
+                margin=dict(l=60, r=40, t=80, b=80),
+                height=500,
+                hovermode='x unified'
             )
-            ax.set_ylabel("Volume Penumpang", fontsize=11, fontweight='semibold', color='#334155')
-            ax.set_xlabel("Periode Waktu", fontsize=11, fontweight='semibold', color='#334155')
-            
-            # Format label sumbu Y agar memiliki pemisah ribuan
-            import matplotlib.ticker as ticker
-            ax.get_yaxis().set_major_formatter(ticker.FuncFormatter(lambda x, p: format(int(x), ',')))
-            
-            # Style Legend
-            ax.legend(
-                loc='upper left', 
-                frameon=True, 
-                facecolor='white', 
-                edgecolor='#e2e8f0', 
-                framealpha=0.95, 
-                fontsize=9.5
-            )
-            
-            # Soft Gridlines horizontal saja
-            ax.grid(True, axis='y', linestyle=':', alpha=0.6, color='#cbd5e1')
-            ax.grid(False, axis='x')
-            
-            # Spines styling
-            ax.spines['top'].set_visible(False)
-            ax.spines['right'].set_visible(False)
-            ax.spines['left'].set_color('#cbd5e1')
-            ax.spines['bottom'].set_color('#cbd5e1')
-            
-            # Format label sumbu X
-            plt.xticks(rotation=45, ha='right', fontsize=8.5, color='#475569')
-            plt.yticks(fontsize=8.5, color='#475569')
-            
-            plt.tight_layout()
-            st.pyplot(fig)
+            fig_plotly.update_xaxes(showline=True, mirror=False)
+            fig_plotly.update_yaxes(showline=True, mirror=False)
+
+            st.plotly_chart(fig_plotly, use_container_width=True)
             st.caption(
                 "📌 **Keterangan:** Garis gelap solid = data aktual historis. "
                 "Garis putus-putus berwarna = prediksi model AI ke depan. "
-                "Wilayah berbayang biru muda di kanan = rentang waktu prediksi."
+                "Wilayah berbayang biru muda di kanan = rentang waktu prediksi. "
+                "Grafik interaktif: bisa di-zoom & di-hover untuk detail nilai."
             )
         
         # ================================================================
